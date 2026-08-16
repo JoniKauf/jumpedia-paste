@@ -1,0 +1,19 @@
+{
+    "name": "jumpedia-paste",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "tsx src/server.ts",
+        "build": "tsc",
+        "start": "node dist/server.js"
+    },
+    "devDependencies": {
+        "@types/ejs": "^3.1.5",
+        "@types/node": "^24.13.3",
+        "tsx": "^4.23.12",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "ejs": "^6.0.1"
+    }
+}
