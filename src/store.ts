@@ -4,17 +4,17 @@ import {
     readdir,
     stat,
     unlink,
-    utimes,
     writeFile,
 } from "node:fs/promises";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
-import { TimeSpan } from "node:time"
+
 const DATA_DIRECTORY =
     process.env.PASTE_DATA_DIRECTORY ??
     join(process.cwd(), "data", "pastes");
 
 const MAX_PASTE_SIZE = 10 * 1024 * 1024;
+const PASTE_LIFETIME = 10 * 60 * 1000;
 
 const ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 
@@ -34,21 +34,17 @@ function getPath(id: string): string {
     return join(DATA_DIRECTORY, id);
 }
 
-export async function createPaste(
-    content: Buffer,
-    expiresAt: Date,
-): Promise<string> {
+export async function createPaste(content: Buffer): Promise<string> {
     if (content.length > MAX_PASTE_SIZE) {
         throw new PasteTooLargeError();
     }
 
     while (true) {
-        const id = randomBytes(9).toString("base64url");
+        const id = randomBytes(12).toString("base64url");
         const path = getPath(id);
 
         try {
             await writeFile(path, content, { flag: "wx" });
-            await utimes(path, expiresAt, expiresAt);
             return id;
         } catch (error) {
             if (
@@ -67,20 +63,11 @@ export async function createPaste(
 export async function getPaste(id: string): Promise<Buffer> {
     const path = getPath(id);
 
-    let information;
-
     try {
-        information = await stat(path);
+        return await readFile(path);
     } catch {
         throw new PasteNotFoundError();
     }
-
-    if (information.mtime <= new Date()) {
-        await deletePaste(id);
-        throw new PasteNotFoundError();
-    }
-
-    return readFile(path);
 }
 
 export async function deletePaste(id: string): Promise<void> {
@@ -98,8 +85,7 @@ export async function deletePaste(id: string): Promise<void> {
 }
 
 export async function deleteExpiredPastes(): Promise<void> {
-    const now = new Date();
-    const expiration = new Date(now.getTime() - 10 * 60 * 1000);
+    const expiration = Date.now() - PASTE_LIFETIME;
 
     for (const name of await readdir(DATA_DIRECTORY)) {
         if (!ID_PATTERN.test(name)) {
@@ -111,7 +97,7 @@ export async function deleteExpiredPastes(): Promise<void> {
         try {
             const information = await stat(path);
 
-            if (information.mtime <= expiration) {
+            if (information.mtime.getTime() <= expiration) {
                 await unlink(path);
             }
         } catch {
