@@ -1,4 +1,8 @@
 import {
+    createHash,
+} from "node:crypto";
+
+import {
     mkdir,
     readFile,
     readdir,
@@ -6,102 +10,174 @@ import {
     unlink,
     writeFile,
 } from "node:fs/promises";
-import { join } from "node:path";
-import { randomBytes } from "node:crypto";
+
+import {
+    join,
+} from "node:path";
+
+import * as fzstd from "fzstd";
 
 const DATA_DIRECTORY =
     process.env.PASTE_DATA_DIRECTORY ??
-    join(process.cwd(), "data", "pastes");
+    join(
+        process.cwd(),
+        "data",
+    );
 
-const MAX_PASTE_SIZE = 10 * 1024 * 1024;
-const PASTE_LIFETIME = 10 * 60 * 1000;
+const PASTE_DIRECTORY =
+    join(
+        DATA_DIRECTORY,
+        "pastes",
+    );
 
-const ID_PATTERN = /^[A-Za-z0-9_-]+$/;
+const PASTE_LIFETIME =
+    10 * 60 * 1000;
 
-export class PasteNotFoundError extends Error {}
-
-export class PasteTooLargeError extends Error {}
+export class PasteNotFoundError
+    extends Error
+{
+    constructor() {
+        super("Paste not found.");
+        this.name =
+            "PasteNotFoundError";
+    }
+}
 
 export async function initializeStore(): Promise<void> {
-    await mkdir(DATA_DIRECTORY, { recursive: true });
+    await mkdir(
+        PASTE_DIRECTORY,
+        {
+            recursive: true,
+        },
+    );
 }
 
-function getPath(id: string): string {
-    if (!ID_PATTERN.test(id)) {
-        throw new PasteNotFoundError();
-    }
-
-    return join(DATA_DIRECTORY, id);
+function getPastePath(
+    id: string,
+): string {
+    return join(
+        PASTE_DIRECTORY,
+        `${id}.zst`,
+    );
 }
 
-export async function createPaste(content: Buffer): Promise<string> {
-    if (content.length > MAX_PASTE_SIZE) {
-        throw new PasteTooLargeError();
-    }
+export async function savePaste(
+    content: Buffer,
+): Promise<string> {
+    await initializeStore();
 
-    while (true) {
-        const id = randomBytes(12).toString("base64url");
-        const path = getPath(id);
+    const id =
+        createHash("sha256")
+            .update(content)
+            .digest("hex");
 
-        try {
-            await writeFile(path, content, { flag: "wx" });
-            return id;
-        } catch (error) {
-            if (
-                error instanceof Error &&
-                "code" in error &&
-                error.code === "EEXIST"
-            ) {
-                continue;
-            }
+    /*
+     * writeFile always updates mtime, even when overwriting a file
+     * with identical bytes. So re-submitting the same content
+     * naturally "renews" it for another PASTE_LIFETIME window,
+     * since deleteExpiredPastes below keys off mtime.
+     */
+    await writeFile(
+        getPastePath(id),
+        content,
+    );
 
-            throw error;
-        }
-    }
+    return id;
 }
 
-export async function getPaste(id: string): Promise<Buffer> {
-    const path = getPath(id);
-
+export async function getPaste(
+    id: string,
+): Promise<Buffer> {
     try {
-        return await readFile(path);
-    } catch {
-        throw new PasteNotFoundError();
-    }
-}
+        const compressed =
+            await readFile(
+                getPastePath(id),
+            );
 
-export async function deletePaste(id: string): Promise<void> {
-    try {
-        await unlink(getPath(id));
-    } catch (error) {
+        return Buffer.from(
+            fzstd.decompress(
+                compressed,
+            ),
+        );
+    } catch (error: unknown) {
         if (
-            !(error instanceof Error) ||
-            !("code" in error) ||
-            error.code !== "ENOENT"
+            error instanceof Error &&
+            "code" in error &&
+            error.code === "ENOENT"
         ) {
-            throw error;
+            throw new PasteNotFoundError();
         }
+
+        throw error;
     }
 }
 
 export async function deleteExpiredPastes(): Promise<void> {
-    const expiration = Date.now() - PASTE_LIFETIME;
+    await initializeStore();
 
-    for (const name of await readdir(DATA_DIRECTORY)) {
-        if (!ID_PATTERN.test(name)) {
+    const now =
+        Date.now();
+
+    const entries =
+        await readdir(
+            PASTE_DIRECTORY,
+            {
+                withFileTypes: true,
+            },
+        );
+
+    for (
+        const entry of entries
+    ) {
+        if (
+            !entry.isFile() ||
+            !entry.name.endsWith(".zst")
+        ) {
             continue;
         }
 
-        const path = join(DATA_DIRECTORY, name);
+        const path =
+            join(
+                PASTE_DIRECTORY,
+                entry.name,
+            );
 
+        /*
+         * Each entry is handled independently so that one bad
+         * stat/unlink (e.g. a concurrent savePaste rewriting the
+         * same file, or something else deleting it between the
+         * readdir above and here) can't abort the rest of the
+         * sweep or crash the whole cleanup tick.
+         */
         try {
-            const information = await stat(path);
+            const information =
+                await stat(path);
 
-            if (information.mtime.getTime() <= expiration) {
+            if (
+                now -
+                information.mtimeMs >=
+                PASTE_LIFETIME
+            ) {
                 await unlink(path);
+
+                console.log(
+                    `Deleted expired paste: ${entry.name}`,
+                );
             }
-        } catch {
-            // The file may have disappeared between operations.
+        } catch (error: unknown) {
+            if (
+                error instanceof Error &&
+                "code" in error &&
+                error.code === "ENOENT"
+            ) {
+                // Already gone (e.g. race with a rewrite/delete) - fine.
+                continue;
+            }
+
+            console.error(
+                `Failed to check/delete paste ${entry.name}:`,
+                error,
+            );
         }
     }
 }

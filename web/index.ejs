@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Jumpedia Paste</title>
+
+    <link rel="stylesheet" href="/p/assets/style.css">
+</head>
+
+<body>
+    <main id="page" class="page">
+        <header class="header">
+            <div class="header-left">
+                <h1 id="title">
+                    Jumpedia Paste
+                </h1>
+
+                <div id="info" class="info">
+                    <%= data.rows.length.toLocaleString() %>
+                    rows ×
+                    <%= data.headers.length.toLocaleString() %>
+                    columns
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button
+                    id="raw-button"
+                    class="json-button"
+                    type="button"
+                >
+                    Raw
+                </button>
+
+                <button
+                    id="json-button"
+                    class="json-button"
+                    type="button"
+                >
+                    Expanded JSON
+                </button>
+            </div>
+        </header>
+
+        <div id="table-container">
+            <div id="loading" class="loading">
+                Loading...
+            </div>
+        </div>
+    </main>
+
+    <script>
+        window.PASTE_ID = <%- JSON.stringify(id) %>;
+
+        window.PASTE_DATA = <%- JSON.stringify(data)
+            .replace(/</g, "\\u003c")
+            .replace(/>/g, "\\u003e")
+            .replace(/&/g, "\\u0026") %>;
+    </script>
+
+    <script
+        type="module"
+        src="/p/assets/main.js"
+    ></script>
+</body>
+</html>

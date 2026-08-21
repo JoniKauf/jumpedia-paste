@@ -1,12 +1,29 @@
-import { deleteExpiredPastes } from "./store.js";
+import {
+    deleteExpiredPastes,
+} from "./store.js";
 
-const CLEANUP_INTERVAL = 60 * 1000;
+const CLEANUP_INTERVAL =
+    60 * 1000;
 
 export function startCleanup(): void {
-    const cleanup = () => {
-        deleteExpiredPastes().catch(console.error);
-    };
+    const cleanup =
+        async (): Promise<void> => {
+            try {
+                await deleteExpiredPastes();
+            } catch (error) {
+                console.error(
+                    "Paste cleanup failed:",
+                    error,
+                );
+            }
+        };
 
-    cleanup();
-    setInterval(cleanup, CLEANUP_INTERVAL);
+    void cleanup();
+
+    setInterval(
+        () => {
+            void cleanup();
+        },
+        CLEANUP_INTERVAL,
+    );
 }

@@ -1,0 +1,451 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+
+    background: #0d0f12;
+    color: #e5e7eb;
+}
+
+body {
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+.page {
+    width: 100%;
+    height: 100%;
+
+    padding: 32px;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #0d0f12;
+    color: #e5e7eb;
+}
+
+.header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 24px;
+
+    flex-shrink: 0;
+
+    margin-bottom: 20px;
+}
+
+.header-left {
+    min-width: 0;
+}
+
+.header h1 {
+    margin: 0;
+
+    color: #f3f4f6;
+
+    font-size: 24px;
+    font-weight: 650;
+
+    letter-spacing: -0.025em;
+}
+
+.info {
+    margin-top: 5px;
+
+    color: #858c97;
+
+    font-size: 13px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    flex-shrink: 0;
+}
+
+.json-button {
+    height: 34px;
+
+    padding: 0 13px;
+
+    border: 1px solid #30353d;
+    border-radius: 6px;
+
+    background: #181b20;
+    color: #c4c9d1;
+
+    font-size: 12px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.json-button:hover {
+    background: #20242a;
+    border-color: #454b55;
+    color: #f3f4f6;
+}
+
+.json-button:active {
+    background: #292e36;
+}
+
+#table-container {
+    flex: 1;
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border: 1px solid #292d34;
+    border-radius: 10px;
+
+    background: #111418;
+
+    box-shadow:
+        0 8px 30px rgb(0 0 0 / 20%),
+        0 1px 2px rgb(0 0 0 / 30%);
+}
+
+.table-scroll {
+    flex: 1;
+    min-height: 0;
+
+    overflow: auto;
+}
+
+.data-table {
+    width: max-content;
+    min-width: 100%;
+
+    border-collapse: separate;
+    border-spacing: 0;
+
+    font-size: 13px;
+}
+
+.data-table thead {
+    position: sticky;
+    top: 0;
+
+    z-index: 2;
+}
+
+.data-table th {
+    min-width: 150px;
+
+    padding: 10px 12px;
+
+    background: #181b20;
+
+    border-right: 1px solid #292d34;
+    border-bottom: 1px solid #363b44;
+
+    color: #c4c9d1;
+
+    font-size: 12px;
+    font-weight: 650;
+
+    text-align: left;
+    vertical-align: bottom;
+
+    white-space: nowrap;
+}
+
+.data-table th:first-child {
+    border-top-left-radius: 9px;
+}
+
+.data-table th:last-child {
+    border-right: 0;
+    border-top-right-radius: 9px;
+}
+
+.column-filter {
+    display: block;
+
+    width: 100%;
+    min-width: 120px;
+    height: 24px;
+
+    padding: 5px 9px;
+
+    border: 1px solid #30353d;
+    border-radius: 5px;
+
+    outline: none;
+
+    background: #111418;
+    color: #e5e7eb;
+
+    font-size: 12px;
+
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.column-filter::placeholder {
+    color: #626975;
+}
+
+.column-filter:hover {
+    border-color: #424852;
+}
+
+.column-filter:focus {
+    border-color: #68717e;
+
+    background: #15181d;
+
+    box-shadow:
+        0 0 0 2px rgb(255 255 255 / 5%);
+}
+
+.column-title {
+    padding: 2px;
+    color: #c4c9d1;
+    white-space: nowrap;
+    margin-bottom: 9px; 
+    font-size: 24px;
+}
+
+.data-table td {
+    min-width: 150px;
+
+    padding: 11px 18px;
+
+    border-right: 1px solid #20242a;
+    border-bottom: 1px solid #20242a;
+
+    background: #111418;
+
+    color: #d7dbe1;
+
+    vertical-align: top;
+
+    white-space: pre-line;
+}
+
+.data-table td:last-child {
+    border-right: 0;
+}
+
+.data-table tbody tr:nth-child(even) td {
+    background: #14171b;
+}
+
+.data-table tbody tr:hover td {
+    background: #1b1f25;
+}
+
+.pagination {
+    flex-shrink: 0;
+
+    min-height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 16px;
+
+    padding: 8px 16px;
+
+    background: #181b20;
+
+    border-top: 1px solid #292d34;
+
+    user-select: none;
+}
+
+.page-button {
+    height: 32px;
+
+    padding: 0 13px;
+
+    border: 1px solid #30353d;
+    border-radius: 6px;
+
+    background: #111418;
+    color: #c4c9d1;
+
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+.page-button:hover:not(:disabled) {
+    background: #20242a;
+    border-color: #454b55;
+    color: #f3f4f6;
+}
+
+.page-button:active:not(:disabled) {
+    background: #292e36;
+}
+
+.page-button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.page-info {
+    min-width: 180px;
+
+    color: #858c97;
+
+    font-size: 12px;
+
+    text-align: center;
+}
+
+.loading {
+    width: 100%;
+    height: 100%;
+
+    display: grid;
+    place-items: center;
+
+    background: #111418;
+    color: #858c97;
+
+    font-size: 14px;
+}
+
+.error {
+    padding: 30px;
+
+    color: #f87171;
+
+    font-size: 14px;
+}
+
+.json-view {
+    width: 100vw;
+    min-height: 100vh;
+
+    margin: 0;
+    padding: 32px;
+
+    overflow: auto;
+
+    background: #0d0f12;
+    color: #e5e7eb;
+
+    font-family:
+        "Fira Code",
+        "Cascadia Code",
+        Consolas,
+        monospace;
+
+    font-size: 13px;
+    line-height: 1.55;
+
+    white-space: pre;
+
+    tab-size: 2;
+}
+
+.table-scroll,
+.json-view {
+    scrollbar-width: auto;
+    scrollbar-color:
+        #30353d
+        #0d0f12;
+}
+
+.table-scroll::-webkit-scrollbar,
+.json-view::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+.table-scroll::-webkit-scrollbar-track,
+.json-view::-webkit-scrollbar-track {
+    background: #0d0f12;
+}
+
+.table-scroll::-webkit-scrollbar-thumb,
+.json-view::-webkit-scrollbar-thumb {
+    background: #30353d;
+
+    border: 3px solid #111418;
+    border-radius: 999px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover,
+.json-view::-webkit-scrollbar-thumb:hover {
+    background: #414752;
+}
+
+@media (max-width: 700px) {
+    .page {
+        padding: 16px;
+    }
+
+    .header {
+        gap: 12px;
+    }
+
+    .header h1 {
+        font-size: 20px;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .json-button {
+        width: 100%;
+    }
+
+    .data-table th,
+    .data-table td {
+        min-width: 130px;
+    }
+
+    .pagination {
+        gap: 10px;
+    }
+
+    .page-info {
+        min-width: 140px;
+    }
+
+    .json-view {
+        padding: 16px;
+        font-size: 12px;
+    }
+}
