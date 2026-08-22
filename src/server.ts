@@ -177,7 +177,7 @@ function formatRawTable(
             return "";
         }
 
-        return cell.join(", ");
+        return cell.join("   ");
     };
 
     const widths =

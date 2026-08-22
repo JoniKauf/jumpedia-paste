@@ -3,6 +3,45 @@ export interface TableData {
     rows: string[][][];
 }
 
+const URL_REGEX = /https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)/g
+        
+function appendTextWithLinks(
+    element: HTMLElement,
+    text: string,
+): void {
+    let lastIndex = 0;
+
+    for (const match of text.matchAll(URL_REGEX)) {
+        const url = match[0];
+        const index = match.index!;
+
+        element.append(
+            document.createTextNode(
+                text.slice(lastIndex, index),
+            ),
+        );
+
+        const link =
+            document.createElement("a");
+
+        link.href = url;
+        link.textContent = url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+
+        element.append(link);
+
+        lastIndex =
+            index + url.length;
+    }
+
+    element.append(
+        document.createTextNode(
+            text.slice(lastIndex),
+        ),
+    );
+}
+
 const PAGE_SIZE =
     500;
 
@@ -10,11 +49,9 @@ export function renderTable(
     container: HTMLElement,
     data: TableData,
 ): void {
-    const names =
-        data.headers;
+    const names = data.headers;
 
-    const rows =
-        data.rows;
+    const rows = data.rows;
 
     container.replaceChildren();
 
@@ -240,8 +277,7 @@ export function renderTable(
             document.createDocumentFragment();
 
         for (
-            let position =
-                start;
+            let position = start;
             position < end;
             position++
         ) {
@@ -257,8 +293,7 @@ export function renderTable(
                 continue;
             }
 
-            const row =
-                rows[rowIndex];
+            const row = rows[rowIndex];
 
             if (
                 row === undefined
@@ -272,8 +307,7 @@ export function renderTable(
                 );
 
             for (
-                let columnIndex =
-                    0;
+                let columnIndex = 0;
                 columnIndex <
                     names.length;
                 columnIndex++
@@ -282,25 +316,17 @@ export function renderTable(
                     row[
                         columnIndex
                     ];
-
-                const td =
-                    document.createElement(
-                        "td",
-                    );
+                
+                const td = document.createElement(
+                    "td",
+                );
 
                 if (
-                    cell ===
-                        undefined ||
-                    cell.length ===
-                        0
+                    cell === undefined || cell.length === 0
                 ) {
-                    td.textContent =
-                        "";
+                    td.textContent = "";
                 } else {
-                    td.textContent =
-                        cell.join(
-                            "\n",
-                        );
+                    appendTextWithLinks(td, cell.join("\n"));
                 }
 
                 tr.appendChild(
@@ -435,8 +461,7 @@ export function renderTable(
                         cell ===
                         undefined
                     ) {
-                        matches =
-                            false;
+                        matches = false;
 
                         break;
                     }
@@ -455,8 +480,7 @@ export function renderTable(
                                     filter,
                                 )
                         ) {
-                            columnMatches =
-                                true;
+                            columnMatches = true;
 
                             break;
                         }

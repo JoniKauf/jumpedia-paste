@@ -2,6 +2,10 @@
     box-sizing: border-box;
 }
 
+a:link { color: #4480c8; }
+a:visited { color: #9270b1; }
+a:hover { color: #ffffff; }
+
 html,
 body {
     width: 100%;
@@ -262,11 +266,11 @@ input {
 }
 
 .data-table tbody tr:nth-child(even) td {
-    background: #14171b;
+    background: #171b1e;
 }
 
 .data-table tbody tr:hover td {
-    background: #1b1f25;
+    background: #2a3038;
 }
 
 .pagination {
