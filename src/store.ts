@@ -31,7 +31,7 @@ const PASTE_DIRECTORY =
     );
 
 const PASTE_LIFETIME =
-    24 * 60 * 60 * 1000;
+    48 * 60 * 60 * 1000;
 
 export class PasteNotFoundError
     extends Error
